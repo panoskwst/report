@@ -1,0 +1,5 @@
+# Ignore environment files
+.env
+
+# Ignore specific JSON files
+Quickstart-3330b5de2e63.json

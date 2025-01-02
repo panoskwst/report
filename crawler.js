@@ -73,25 +73,6 @@ async function executeCrawler() {
 
     console.log('All extracted data:', results);
 
-    // url declaration
-    // const url = `https://chartbeat.com/publishing/historical/${sitename}/?show_landing=checked&sort=total_engaged_time`;
-    // await page.goto(url);
-    // await page.waitForNavigation();
-    // await page.waitForSelector('div[data-analytics-id="hd-summaryMetrics-Pageviews"] h3', { visible: true });
-    // await page.screenshot({path: 'screenshot.png'});
-    // // Extract data from the h3 element inside the div
-    // const pageviewsText = await page.$eval('div[data-analytics-id="hd-summaryMetrics-Pageviews"] h3', (element) => {
-    //     return element.textContent.trim(); // Extract and clean the text content
-    // });
-
-    // console.log('Pageviews:', pageviewsText); // Print the extracted text
-    // const uniquesText = await page.$eval('div[data-analytics-id="hd-summaryMetrics-Uniques"] h3', (element) => {
-    //     return element.textContent.trim(); // Extract and clean the text content
-    // });
-
-    // console.log('Uniques:', uniquesText); // Print the extracted text
-    // await browser.close();
-
     await browser.close();
     return results;
 }

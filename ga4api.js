@@ -43,7 +43,6 @@ async function fetchReport(analyticsData, propertyId) {
                 {name: 'engagementRate'},
                 {name: 'userEngagementDuration'},
                 {name: "activeUsers"},
-                // {name: 'averageEngagementTime'},
             ],
             dateRanges: [
                 {startDate: 'yesterday', endDate: 'yesterday'}, // Example date range

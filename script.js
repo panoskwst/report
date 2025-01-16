@@ -23,7 +23,9 @@ async function main() {
         const combinedData = combineData(crawlerData, ga4Data);
 
         // Step 4: Generate the Excel file based on combined data
-        const outputFile = 'AnalyticsReport.xlsx';
+        // const outputFile = 'Y:\\INTERNET\\PROGRAMMATIC\\ADSENSE\\AdSenseReport_DAILY_2025.xlsx';
+        // const outputFile = 'test\\AdSenseReport_DAILY_2025.xlsx';
+        const outputFile = 'Z:\\__PORTAL\\WEB\\Reports\\AdSenseReport_DAILY_2025.xlsx';
         generateExcel(combinedData, outputFile);
 
         console.log(`Excel file generated at ${outputFile}`);
@@ -46,16 +48,32 @@ function combineData(crawlerData, ga4Data) {
 
 // Function to generate Excel file from data
 function generateExcel(data, outputFile) {
-
-    const rows = [];
-    console.log('All the data are here: ', data );
-
     const parseDate = (rawDate) => {
         const year = rawDate.slice(0, 4);
         const month = rawDate.slice(4, 6);
         const day = rawDate.slice(6, 8);
         return `${day}.${month}.${year}`;
     };
+
+    let workbook;
+    let worksheet;
+    let existingRows = [];
+
+    if (fs.existsSync(outputFile)) {
+        workbook = xlsx.readFile(outputFile);
+        worksheet = workbook.Sheets['Analytics'];
+
+        // Parse existing rows
+        existingRows = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    } else {
+        // Create a new workbook and worksheet if the file doesn't exist
+        workbook = xlsx.utils.book_new();
+        worksheet = xlsx.utils.aoa_to_sheet([]);
+        workbook.Sheets['Analytics'] = worksheet;
+        workbook.SheetNames.push('Analytics');
+    }
+
+    const rows =existingRows.length === 0 ? [] : [...existingRows];
 
     const firstEntryDate = data.length > 0 && data[0].reportData.length > 0 
         ? parseDate(data[0].reportData[0].date)// Format as dd.mm.yyyy
@@ -74,6 +92,11 @@ function generateExcel(data, outputFile) {
             'Average engagement time'
         ]); // Header row
     
+            // Initialize total counters
+        let totalCbUniques = 0;
+        let totalCbPageviews = 0;
+        let totalGaUsers = 0;
+        let totalGaPageviews = 0;
 
     data.forEach(({ siteName, reportData,chartBeatPageviews, chartBeatuniques }) => {
 
@@ -88,21 +111,38 @@ function generateExcel(data, outputFile) {
             const formatNumber = (num) => {
                 return num.toLocaleString('en-GB').replace(/,/g, '.');
             };
+            const parseNumber = (num) => {
+                if (typeof num === 'string') {
+                    // Remove thousands separator dots
+                    num = num.replace(/\./g, '');
+                }
+                return parseFloat(num) || 0; // Parse the cleaned string as a number
+            };
 
              // Format numeric values
-             const totalUsers = formatNumber(parseFloat(page.users));
+             const gaUsers = formatNumber(parseFloat(page.users));
              const pageviews = formatNumber(parseFloat(page.pageviews));
              const viewsPerUser = formatNumber(parseFloat(page.viewsperuser));
              const cbpageviews = formatNumber(chartBeatPageviews);
              const cbuniques = formatNumber(chartBeatuniques);
              console.log("pageviews: ", cbpageviews," uniques: ",cbuniques);
-            const engagementRate = (parseFloat(page.engagementRate) * 100).toFixed(2) + '%';
+            const engagementRate = (parseFloat(page.engagementRate) * 100).toFixed(0) + '%';
+
+            // Accumulate totals
+            // totalCbUniques += parseFloat(chartBeatuniques);
+            // totalCbPageviews += parseFloat(chartBeatPageviews);
+            totalCbUniques += parseNumber(cbuniques);
+            totalCbPageviews += parseNumber(cbpageviews);
+            totalGaUsers += parseFloat(page.users);
+            totalGaPageviews += parseFloat(page.pageviews);
+            console.log(' totalCbUniques: ',totalCbUniques, ' totalCbPageviews:', totalCbPageviews, ' totalGaUsers: ', totalGaUsers, ' totalGaPageviews: ', totalGaPageviews);
+
             rows.push([
                 siteName,
                 '',
                 cbuniques,
                 cbpageviews,
-                totalUsers,
+                gaUsers,
                 pageviews,
                 viewsPerUser,
                 engagementRate,
@@ -111,21 +151,34 @@ function generateExcel(data, outputFile) {
         });
     });
 
-    const worksheet = xlsx.utils.aoa_to_sheet(rows);
-    // Set column widths
-    worksheet['!cols'] = [
-        { wch: 25 }, // 'Site' column
-        { wch: 25 }, // 'Adsense' column
-        { wch: 25 }, // 'cbpageviews' column
-        { wch: 15 }, // 'cbuniques' column
-        { wch: 12 }, // 'Total Users' column
-        { wch: 15 }, // 'Pageviews' column
-        { wch: 15 }, // 'Views per user' column
-        { wch: 20 }, // 'Engagement rate' column
-        { wch: 35 }, // 'Average engagement time' column
-    ];
-    const workbook = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'Analytics');
+    rows.push([
+        'Total',
+        '',
+        totalCbUniques.toLocaleString('en-GB').replace(/,/g, '.'),
+        totalCbPageviews.toLocaleString('en-GB').replace(/,/g, '.'),
+        totalGaUsers.toLocaleString('en-GB').replace(/,/g, '.'),
+        totalGaPageviews.toLocaleString('en-GB').replace(/,/g, '.'),
+        '',
+        '',
+        ''
+    ]);
+
+    // worksheet = xlsx.utils.aoa_to_sheet(rows);
+
+    const updatedWorksheet = xlsx.utils.aoa_to_sheet(rows);
+        // Set column widths
+        updatedWorksheet['!cols'] = [
+            { wch: 25 }, // 'Site' column
+            { wch: 25 }, // 'Adsense' column
+            { wch: 25 }, // 'cbpageviews' column
+            { wch: 15 }, // 'cbuniques' column
+            { wch: 12 }, // 'Total Users' column
+            { wch: 15 }, // 'Pageviews' column
+            { wch: 15 }, // 'Views per user' column
+            { wch: 20 }, // 'Engagement rate' column
+            { wch: 35 }, // 'Average engagement time' column
+        ];
+    workbook.Sheets['Analytics'] = updatedWorksheet;
 
     xlsx.writeFile(workbook, outputFile);
     console.log(`Excel file generated: ${outputFile}`);

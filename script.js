@@ -6,10 +6,50 @@ const {google} = require('googleapis');
 require('isomorphic-fetch');
 const { executeCrawler } = require('./crawler');
 const { executeGA4Api } = require('./ga4api');
+const { executeAfieromata } = require('./afieromata');
 const { parse } = require('path');
-
+const readline = require('readline');
 
 async function main() {
+
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+        // Function to ask user for the report type
+        function askReportType() {
+            return new Promise((resolve, reject) => {
+                rl.question('What report would you like to generate? (e.g., "daily analitycs", "afieromata"): ', (answer) => {
+                    resolve(answer);
+                });
+            });
+        }
+
+    try {
+
+        // Ask the user for the report type
+        const reportType = await askReportType();
+
+        switch (reportType.toLowerCase()) {
+            case 'daily analitycs' :
+               await dailyAnalitics();
+                break;
+            case 'afieromata' :
+                await afieromataReport();
+                break;
+            default:
+                console.log('Unknown report type. Please choose from "daily analitycs", "afieromata"');
+                break;
+    }
+
+    } catch (error) {
+        console.error("Error in the main flow:", error);
+    }
+}
+
+async function dailyAnalitics() {
+
     try {
         // Step 1: Execute crawler and fetch Chartbeat data
         const crawlerData = await executeCrawler();
@@ -23,17 +63,21 @@ async function main() {
         const combinedData = combineData(crawlerData, ga4Data);
 
         // Step 4: Generate the Excel file based on combined data
-        // const outputFile = 'Y:\\INTERNET\\PROGRAMMATIC\\ADSENSE\\AdSenseReport_DAILY_2025.xlsx';
-        // const outputFile = 'test\\AdSenseReport_DAILY_2025.xlsx';
         const outputFile = 'Z:\\__PORTAL\\WEB\\Reports\\AdSenseReport_DAILY_2025.xlsx';
         generateExcel(combinedData, outputFile);
 
         console.log(`Excel file generated at ${outputFile}`);
+
     } catch (error) {
-        console.error("Error in the main flow:", error);
+
+        console.log("Error in the execution of the daily reports: ", error);
     }
+ 
 }
 
+async function afieromata() {
+    const afieromataData = await executeAfieromata();
+}
 // Function to combine data
 function combineData(crawlerData, ga4Data) {
 

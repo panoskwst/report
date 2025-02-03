@@ -17,6 +17,7 @@ async function main() {
         output: process.stdout
     });
 
+
         // Function to ask user for the report type
         function askReportType() {
             return new Promise((resolve, reject) => {
@@ -27,21 +28,26 @@ async function main() {
         }
 
     try {
+        
+        let valid = false;
+        do {
+            // Ask the user for the report type
+            const reportType = await askReportType();
 
-        // Ask the user for the report type
-        const reportType = await askReportType();
-
-        switch (reportType.toLowerCase()) {
-            case 'daily analitycs' :
-               await dailyAnalitics();
-                break;
-            case 'afieromata' :
-                await afieromataReport();
-                break;
-            default:
-                console.log('Unknown report type. Please choose from "daily analitycs", "afieromata"');
-                break;
-    }
+            switch (reportType.toLowerCase()) {
+                case 'daily analitycs' :                    
+                    await dailyAnalitics();
+                    valid = true;
+                    break;
+                case 'afieromata' :
+                    await afieromataReport();
+                    valid = true;
+                    break;
+                default:
+                    console.log('Unknown report type. Please try again.');
+                    break;
+            }
+        } while (valid != true);
 
     } catch (error) {
         console.error("Error in the main flow:", error);
@@ -51,6 +57,7 @@ async function main() {
 async function dailyAnalitics() {
 
     try {
+        console.log('i run');
         // Step 1: Execute crawler and fetch Chartbeat data
         const crawlerData = await executeCrawler();
         console.log("Crawler data fetched:", crawlerData);
@@ -73,6 +80,8 @@ async function dailyAnalitics() {
         console.log("Error in the execution of the daily reports: ", error);
     }
  
+    console.log("Daily Analytics report completed. Exiting script...");
+    process.exit(0);
 }
 
 async function afieromata() {

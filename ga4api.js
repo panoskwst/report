@@ -1,11 +1,14 @@
 const { google } = require('googleapis');
+const { getGA4Auth } = require('./google-auth');
 const KEY_FILE_PATH = 'Quickstart-3330b5de2e63.json';
 
 async function executeGA4Api() {
-    const auth = new google.auth.GoogleAuth({
-        keyFile: KEY_FILE_PATH,
-        scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
-    });
+    // const auth = new google.auth.GoogleAuth({
+    //     keyFile: KEY_FILE_PATH,
+    //     scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+    // });
+
+    const auth = getGA4Auth();
 
     const analyticsData = google.analyticsdata({
         version: 'v1beta',

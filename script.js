@@ -9,6 +9,7 @@ const { executeGA4Api } = require('./ga4api').default;
 const { executeAfieromata } = require('./afieromata');
 const { parse } = require('path');
 const readline = require('readline');
+const { getAdSenseAuth } = require('./google-auth');
 
 async function main() {
 
